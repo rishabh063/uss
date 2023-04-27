@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>Upload File</title>
@@ -110,5 +110,129 @@
             }
         }
     </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Two Sections Using Tabs</title>
+	<!-- Add Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<!-- Add Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<style>
+		.tab-content {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+	</style>
+</head>
+<body>
+
+	<!-- Create the tab navigation -->
+	<ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist">
+	  <li class="nav-item">
+	    <a class="nav-link active" id="section1-tab" data-toggle="tab" href="#section1" role="tab" aria-controls="section1" aria-selected="true">Upload Doc</a>
+	  </li>
+	  <li class="nav-item">
+	    <a class="nav-link" id="section2-tab" data-toggle="tab" href="#section2" role="tab" aria-controls="section2" aria-selected="false">Retrieve Doc</a>
+	  </li>
+	</ul>
+
+	<!-- Create the tab content -->
+	<div class="tab-content" id="myTabContent">
+	  <div class="tab-pane fade show active" id="section1" role="tabpanel" aria-labelledby="section1-tab">
+	    <h2>Upload Doc</h2>
+	    <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+            <label for="faceImage">Face Image:</label>
+            <input type="file" name="file" id="faceImageInput">
+            <br><br>
+            <label for="emailID">Email ID:</label>
+            <input type="text" id="emailID" name="emailID">
+            <br><br>
+            <label for="fileUpload">File Upload:</label>
+            <input type="file" name="file2" id="fileInput">
+            <br><br>
+            <input type="submit" value="Upload">
+        </form>
+	  </div>
+	  <div class="tab-pane fade" id="section2" role="tabpanel" aria-labelledby="section2-tab">
+	    <h2>Retrieve Doc</h2>
+            <label for="faceVideo">Video:</label>
+            <div id="video-container">
+                <video id="faceVideo" autoplay></video>
+            </div>
+            <label for="emailID">emailID:</label>
+            <input type="text" id="emailID2" name="emailID">
+            <br><br>
+            <button id="startButton">Start</button>
+            <button id="stopButton">Stop</button>
+            
+            
+        <script>
+            // Get the video element
+            const videoElement = document.getElementById('faceVideo');
+    
+            // Get the emailID element
+            const emailIDElement = document.getElementById('emailID2');
+            
+            // Get the start and stop buttons
+            const startButton = document.getElementById('startButton');
+            const stopButton = document.getElementById('stopButton');
+    
+            // Create a MediaStream object from the webcam
+            let mediaStream = null;
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                mediaStream = stream;
+                videoElement.srcObject = mediaStream;
+            })
+            .catch(error => {
+                alert('Error accessing webcam!');
+            });
+    
+            // Create a MediaRecorder object to record the video
+            let mediaRecorder = null;
+            let recordedChunks = [];
+            startButton.addEventListener('click', event => {
+                event.preventDefault();
+                if (mediaStream !== null) {
+                    mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
+                    recordedChunks = [];
+                    mediaRecorder.addEventListener('dataavailable', event => {
+                        recordedChunks.push(event.data);
+                    });
+                    mediaRecorder.start();
+                }
+            });
+            stopButton.addEventListener('click', event => {
+                event.preventDefault();
+                if (mediaRecorder !== null) {
+                    mediaRecorder.stop();
+                    const recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                    console.log('Recorded video size:', recordedBlob.size, 'bytes');
+                    const formData = new FormData();
+                    formData.append('file', recordedBlob, 'face-video.webm');
+                    console.log(document.getElementById('emailID2').value);
+                    formData.append('emailID', document.getElementById('emailID2').value);
+                    fetch("{{ url_for('collect') }}", {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        alert('Video collected successfully!');
+                    })
+                    .catch(error => {
+                        alert('Error collecting video!');
+                    });
+                }
+            });
+        </script>
+	  </div>
+	</div>
+
 </body>
 </html>

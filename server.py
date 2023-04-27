@@ -2,6 +2,8 @@ from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from facial_position_detection import * 
 import time
+import base64
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
@@ -29,19 +31,21 @@ def showDoc():
 def upload():
     # Get the uploaded file
     file = request.files['file']
+    doc=request.files['file2']
+    file_content = doc.read()
+    base64_content = base64.b64encode(file_content).decode('utf-8')
     if file.filename == '':
         return 'No file selected'
 
     # Get the emailID, date of birth, and content type from the form
     emailID = request.form.get('emailID')
-    content = request.form.get('encryptedContent')
-    contentType = request.form.get('contentType')
+    contentType = doc.filename.split(',')[-1]
     filename='images/'+emailID+'img.'+file.filename.split('.')[-1]
     file.save(filename)
     time.sleep(0.1)
     if not checkFace(filename):
         return 'No Face Found'
-    data = DocumentEntry(id=emailID , econtent=content, contentType=contentType  , photoID=filename)
+    data = DocumentEntry(id=emailID , econtent=base64_content, contentType=contentType  , photoID=filename)
     db.session.add(data)
     db.session.commit()
     return 'added to the database'
@@ -50,10 +54,12 @@ def collect():
     if 'file' not in request.files:
         return 'No file uploaded'
     file = request.files['file']
+
     if file.filename == '':
         return 'No file selected'
     
     emailID = request.form.get('emailID')
+    print(emailID , file.filename)
     users = DocumentEntry.query.filter_by(id=emailID).all()
     # Print each user's name and email
     try:
