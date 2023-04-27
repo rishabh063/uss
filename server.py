@@ -61,9 +61,12 @@ def collect():
     except:
         return 'Email Not Found'
     filename='videos/'+emailID+'temp.'+file.filename.split('.')[-1]
-    file.save(file.filename)
+    file.save(filename)
     time.sleep(0.1)
-    run(file.filename ,[], baseFile )
-    return 'Done'
+    output=run(filename ,[[0,0,1,1]], baseFile )
+    print(output)
+    if output:
+        return str(users[0].econtent)
+    return 'Face mismatch'
 if __name__ == '__main__':
     app.run(debug=True, port=8080)

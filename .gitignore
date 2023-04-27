@@ -2,3 +2,4 @@ mediapipe.ipynb
 __pycache__
 instance/database.db
 images
+videos

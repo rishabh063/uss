@@ -40,17 +40,21 @@ def MediapipeProccess(frames):
     return average_output_points
 def facerecog(basepath,frames):
     workcount=0
+    workingFrames=0
     known_image = face_recognition.load_image_file(basepath)
     known_image_Embed = face_recognition.face_encodings(known_image)[0]
     for frame in frames:
+        result=False
         try:
             unknown_encoding = face_recognition.face_encodings(frame)[0]
             result = face_recognition.compare_faces([known_image_Embed], unknown_encoding)[0]
+            workingFrames+=1
         except:
             pass
         if result:
             workcount=+1
-    if workcount/len(frames)>0.6:
+    print(workcount ,workingFrames )
+    if workcount>0:
         return True 
     return False
 def run(videopath , pointlist , imagePath ):
@@ -67,6 +71,7 @@ def run(videopath , pointlist , imagePath ):
                 break
             checklistArray=checklistArray[1:]
     randomFrames=random.sample(videoframes, 10)
+
     if len(checklistArray)==0 and facerecog(imagePath,randomFrames):
         return 1
     return 0
