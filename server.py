@@ -1,14 +1,18 @@
-from flask import Flask, render_template, request, send_from_directory, send_file, redirect, url_for
-import requests
-import json
-import os
-from cryptography.fernet import Fernet
-
-
-
+from flask import Flask, render_template, request
+from flask_sqlalchemy import SQLAlchemy
+from facial_position_detection import * 
+import time
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+db = SQLAlchemy(app)
+class DocumentEntry(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    econtent = db.Column(db.Text, nullable=False)
+    contentType = db.Column(db.String(120),  nullable=False)
+    photoID = db.Column(db.String(120),  nullable=False)
 
+    def __repr__(self):
+        return f'<User {self.name}>'
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -31,93 +35,36 @@ def upload():
 
     # Get the passphrase, date of birth, and content type from the form
     passphrase = request.form.get('passphrase')
-    dob = request.form.get('dob')
-    content_type = request.form.get('contentType')
-
-    # Encrypt the file using the passphrase
-    key = Fernet.generate_key()
-    f = Fernet(key)
-    encrypted_data = f.encrypt(file.read())
-
-    # Convert the encrypted data to a string
-    encrypted_data_str = encrypted_data.decode('latin-1')
-
-    # Save the encrypted file to disk
-    filename = file.filename
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    with open(file_path, 'wb') as encrypted_file:
-        encrypted_file.write(encrypted_data)
-
-    # Create a dictionary of metadata to send to the backend
-    metadata = {
-        'passphrase': passphrase,
-        'dob': dob,
-        'content_type': content_type,
-        'key': key
-    }
-
-    # Send the metadata and encrypted file to the backend
-    #data = {
-     #   'metadata': metadata,
-    #    'encrypted_data': encrypted_data_str
-    #}
-    #headers = {'Content-type': 'application/json'}
-    #response = requests.post('http://localhost:8080/upload', data=json.dumps(data), headers=headers)
-
-
-    return '''
-    <script>
-        alert('File uploaded successfully');
-        window.location.href = '/';
-    </script>
-    '''
-
-    # print(request.files)
-    # if 'file' not in request.files:
-    #     return 'No file uploaded'
-
-    # file = request.files['file']
-    # if file.filename == '':
-    #     return 'No file selected'
-    # passphrase = request.form.get('passphrase')
-    # print(passphrase)
-    # content = request.form.get('encryptedContent')
-    # print(content)
-    # contentType = request.form.get('contentType')
-    # print(contentType)
-    # file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
-    # return 'File uploaded successfully'
-
+    content = request.form.get('encryptedContent')
+    contentType = request.form.get('contentType')
+    filename='images/'+passphrase+'img.'+file.filename.split('.')[-1]
+    file.save(filename)
+    time.sleep(0.1)
+    if not checkFace(filename):
+        return 'No Face Found'
+    data = DocumentEntry(id=passphrase , econtent=content, contentType=contentType  , photoID=filename)
+    db.session.add(data)
+    db.session.commit()
+    return 'added to the database'
 @app.route('/collect', methods=['POST'])
 def collect():
     if 'file' not in request.files:
         return 'No file uploaded'
-
     file = request.files['file']
     if file.filename == '':
         return 'No file selected'
     
     passphrase = request.form.get('passphrase')
-    key_file = request.files['key']
-    print(passphrase)
-
-    # Read the key from the key file
-    key = key_file.read()
-
-    # Decrypt the file using the key and passphrase
-    f = Fernet(key)
-    encrypted_data = file.read()
-    decrypted_data = f.decrypt(encrypted_data)
-
-    # Save the decrypted file to disk
-    filename = file.filename
-    decrypted_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename + '.decrypted')
-    with open(decrypted_file_path, 'wb') as decrypted_file:
-        decrypted_file.write(decrypted_data)
-
-    return render_template('index.html', decrypted_file_path=decrypted_file_path, os=os)
-
-
-
+    users = DocumentEntry.query.filter_by(id=passphrase).all()
+    # Print each user's name and email
+    try:
+        baseFile=users[0].photoID
+    except:
+        return 'Email Not Found'
+    filename='videos/'+passphrase+'temp.'+file.filename.split('.')[-1]
+    file.save(file.filename)
+    time.sleep(0.1)
+    run(file.filename ,[], baseFile )
+    return 'Done'
 if __name__ == '__main__':
     app.run(debug=True, port=8080)

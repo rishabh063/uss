@@ -53,8 +53,8 @@ def facerecog(basepath,frames):
     if workcount/len(frames)>0.6:
         return True 
     return False
-def run(path , pointlist , ):
-    videoframes=getFrames(path)
+def run(videopath , pointlist , imagePath ):
+    videoframes=getFrames(videopath)
     allPointsAverage=MediapipeProccess(videoframes)
     checklistArray=[]
     for  i in pointlist:
@@ -67,9 +67,14 @@ def run(path , pointlist , ):
                 break
             checklistArray=checklistArray[1:]
     randomFrames=random.sample(videoframes, 10)
-    if len(checklistArray)==0 and facerecog('testimage.jpg',videoframes):
+    if len(checklistArray)==0 and facerecog(imagePath,randomFrames):
         return 1
     return 0
 
-
-print(run('output.mov',[[0.3,0.2,0.4,0.7],[0.4,0.2,0.5,0.95]]))
+def checkFace(imagePath):
+    try:
+        known_image = face_recognition.load_image_file(imagePath)
+        known_image_Embed = face_recognition.face_encodings(known_image)[0]
+        return True
+    except:
+        return False
