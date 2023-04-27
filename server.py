@@ -33,16 +33,16 @@ def upload():
     if file.filename == '':
         return 'No file selected'
 
-    # Get the passphrase, date of birth, and content type from the form
-    passphrase = request.form.get('passphrase')
+    # Get the emailID, date of birth, and content type from the form
+    emailID = request.form.get('emailID')
     content = request.form.get('encryptedContent')
     contentType = request.form.get('contentType')
-    filename='images/'+passphrase+'img.'+file.filename.split('.')[-1]
+    filename='images/'+emailID+'img.'+file.filename.split('.')[-1]
     file.save(filename)
     time.sleep(0.1)
     if not checkFace(filename):
         return 'No Face Found'
-    data = DocumentEntry(id=passphrase , econtent=content, contentType=contentType  , photoID=filename)
+    data = DocumentEntry(id=emailID , econtent=content, contentType=contentType  , photoID=filename)
     db.session.add(data)
     db.session.commit()
     return 'added to the database'
@@ -54,14 +54,14 @@ def collect():
     if file.filename == '':
         return 'No file selected'
     
-    passphrase = request.form.get('passphrase')
-    users = DocumentEntry.query.filter_by(id=passphrase).all()
+    emailID = request.form.get('emailID')
+    users = DocumentEntry.query.filter_by(id=emailID).all()
     # Print each user's name and email
     try:
         baseFile=users[0].photoID
     except:
         return 'Email Not Found'
-    filename='videos/'+passphrase+'temp.'+file.filename.split('.')[-1]
+    filename='videos/'+emailID+'temp.'+file.filename.split('.')[-1]
     file.save(file.filename)
     time.sleep(0.1)
     run(file.filename ,[], baseFile )
