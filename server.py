@@ -19,8 +19,7 @@ def index():
 
 @app.route('/uploadPage')
 def uploadPage():
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
-    return render_template('index.html', files=files)
+    return render_template('index.html')
 
 @app.route('/showdoc')
 def showDoc():
