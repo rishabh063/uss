@@ -19,28 +19,45 @@
         <select id="contentType" name="contentType">
             <option value="image/png">PNG</option>
             <option value="image/jpeg">JPEG</option>
-            <option value="image/gif">GIF</option>
+            <option value="image/pdf">PDF</option>
         </select>
         <br><br>
         <input type="submit" value="Upload">
     </form>
 
-    <h1>Available Files:</h1>
-    <ul>
-        {% for file in files %}
-        <li><a href="{{ url_for('download', filename=file) }}">{{ file }}</a></li>
-        {% endfor %}
-    </ul>
+    
 
 
     <h1>Get File</h1>
-    <form method="POST" enctype="multipart/form-data" action="{{ url_for('collect') }}">
-        <label for="faceImage">Video</label>
-        <input type="file" name="file">
-        <br><br>
-        <label for="passphrase">Passphrase:</label>
-        <input type="text" id="passphrase" name="passphrase">
-        <input type="submit" value="collect">
-    </form>
+<form method="POST" enctype="multipart/form-data" action="{{ url_for('collect') }}">
+    <label for="faceImage">Video:</label>
+    <div id="container">
+        <video autoplay="true" id="videoElement">
+        
+        </video>
+    <input type="file" name="file">
+    <br><br>
+    <label for="passphrase">Passphrase:</label>
+    <input type="text" id="passphrase" name="passphrase">
+    <br><br>
+    <input type="submit" value="Collect">
+</form>
+
+<script>
+    var video = document.querySelector("#videoElement");
+
+    if (navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+        video.srcObject = stream;
+        })
+        .catch(function (err0r) {
+        console.log("Something went wrong!");
+        });
+    }
+</script>
+
+
+
 </body>
 </html>
