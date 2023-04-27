@@ -25,37 +25,65 @@
         <input type="submit" value="Upload">
     </form>
 
-    
-
 
     <h1>Get File</h1>
+    <button onclick="toggleCamera()">Toggle Camera</button>
 <form method="POST" enctype="multipart/form-data" action="{{ url_for('collect') }}">
-    <label for="faceImage">Video:</label>
     <div id="container">
-        <video autoplay="true" id="videoElement">
-        
-        </video>
-    <input type="file" name="file">
+        <video autoplay="true" id="videoElement"></video>
+    </div>
     <br><br>
     <label for="passphrase">Passphrase:</label>
     <input type="text" id="passphrase" name="passphrase">
     <br><br>
+    <br><br>
     <input type="submit" value="Collect">
 </form>
 
+<div id="videoContainer">
+    <video autoplay="true" id="videoElement"></video>
+</div>
+
 <script>
     var video = document.querySelector("#videoElement");
+    var videoContainer = document.querySelector("#videoContainer");
+    var stream = null;
 
     if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function (stream) {
-        video.srcObject = stream;
-        })
-        .catch(function (err0r) {
-        console.log("Something went wrong!");
-        });
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (cameraStream) {
+                video.srcObject = cameraStream;
+                stream = cameraStream;
+            })
+            .catch(function (err) {
+                console.log("Something went wrong!", err);
+            });
+    }
+
+    function toggleCamera() {
+        if (stream) {
+            // Stop camera
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+            video.pause();
+            videoContainer.style.display = "hidden";
+        } else {
+            // Start camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (cameraStream) {
+                    video.srcObject = cameraStream;
+                    stream = cameraStream;
+                    video.play();
+                    videoContainer.style.display = "block";
+                })
+                .catch(function (err) {
+                    console.log("Something went wrong!", err);
+                });
+        }
     }
 </script>
+
+
 
 
 
