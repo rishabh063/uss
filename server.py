@@ -46,9 +46,12 @@ def upload():
     time.sleep(0.1)
     if not checkFace(filename):
         return 'No Face Found'
-    data = DocumentEntry(id=emailID , econtent=base64_content, contentType=contentType  , photoID=filename)
-    db.session.add(data)
-    db.session.commit()
+    try:
+        data = DocumentEntry(id=emailID , econtent=base64_content, contentType=contentType  , photoID=filename)
+        db.session.add(data)
+        db.session.commit()
+    except:
+        return 'Email already Filled'
     return 'added to the database'
 @app.route('/collect', methods=['POST'])
 def collect():
