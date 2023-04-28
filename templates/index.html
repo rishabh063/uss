@@ -161,6 +161,7 @@
 	  </div>
 	  <div class="tab-pane fade" id="section2" role="tabpanel" aria-labelledby="section2-tab">
 	    <h2>Retrieve Doc</h2>
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('collect') }}">
             <label for="faceVideo">Video:</label>
             <div id="video-container">
                 <video id="faceVideo" autoplay></video>
@@ -170,9 +171,15 @@
             <br><br>
             <button id="startButton">Start</button>
             <button id="stopButton">Stop</button>
+            <br><br>
+            <h2>If Video Is Not Working</h2>
+            <input type="file" name="file" id="faceImageInput">
             
-            
-        <script>
+            <input type="submit" value="collect">
+           
+
+            </form>
+        <!-- <script>
             // Get the video element
             const videoElement = document.getElementById('faceVideo');
     
@@ -230,7 +237,7 @@
                     });
                 }
             });
-        </script>
+        </script> -->
 	  </div>
 	</div>
 

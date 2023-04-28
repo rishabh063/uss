@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request , Response , send_file
+from io import BytesIO
 from flask_sqlalchemy import SQLAlchemy
 from facial_position_detection import * 
 import time
@@ -72,7 +73,14 @@ def collect():
     output=run(filename ,[[0,0,1,1]], baseFile )
     print(output)
     if output:
-        return str(users[0].econtent)
+        decoded_bytes = base64.b64decode(users[0].econtent)
+        # Create a Flask Response object with the decoded bytes as the content
+        img_buffer = BytesIO(decoded_bytes)
+        print(users[0].contentType.split('.')[-1])
+    # Return the image file using Flask's send_file function
+        return send_file(img_buffer, mimetype='image/'+users[0].contentType.split('.')[-1])
+
+
     return 'Face mismatch'
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
