@@ -70,7 +70,10 @@ def collect():
     filename='videos/'+emailID+'temp.'+file.filename.split('.')[-1]
     file.save(filename)
     time.sleep(0.1)
-    output=run(filename ,[[0,0,1,1]], baseFile )
+    try:
+        output=run(filename ,[[0,0,1,1]], baseFile )
+    except:
+        return "Video doesnt Match"
     print(output)
     if output:
         decoded_bytes = base64.b64decode(users[0].econtent)
@@ -83,4 +86,4 @@ def collect():
 
     return 'Face mismatch'
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=False, port=8080)
