@@ -42,7 +42,7 @@ def upload():
     emailID = request.form.get('emailID')
     contentType = doc.filename.split('.')[-1]
     print(contentType)
-    if contentType!='webp' or contentType!='png' or contentType!='jpeg' or contentType!='jpg':
+    if contentType!='webp' and contentType!='png' and contentType!='jpeg' and contentType!='jpg':
         return 'Only Images are allowed'
     filename='images/'+emailID+'img.'+file.filename.split('.')[-1]
     file.save(filename)
