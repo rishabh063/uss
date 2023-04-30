@@ -40,7 +40,10 @@ def upload():
 
     # Get the emailID, date of birth, and content type from the form
     emailID = request.form.get('emailID')
-    contentType = doc.filename.split(',')[-1]
+    contentType = doc.filename.split('.')[-1]
+    print(contentType)
+    if contentType!='webp' or contentType!='png' or contentType!='jpeg' or contentType!='jpg':
+        return 'Only Images are allowed'
     filename='images/'+emailID+'img.'+file.filename.split('.')[-1]
     file.save(filename)
     time.sleep(0.1)
@@ -63,7 +66,6 @@ def collect():
         return 'No file selected'
     
     emailID = request.form.get('emailID')
-    print(emailID , file.filename)
     users = DocumentEntry.query.filter_by(id=emailID).all()
     # Print each user's name and email
     try:
